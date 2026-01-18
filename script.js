@@ -23,6 +23,21 @@ document.addEventListener('DOMContentLoaded', () => {
 	        });
 	    });
 	}
+	// 监听网络状态切换
+	window.addEventListener('online', () => {
+	    document.getElementById('offline-indicator').style.display = 'none';
+	    console.log('网络已恢复');
+	});
+	
+	window.addEventListener('offline', () => {
+	    document.getElementById('offline-indicator').style.display = 'block';
+	    console.log('网络已断开');
+	});
+	
+	// 初始化检查
+	if (!navigator.onLine) {
+	    document.getElementById('offline-indicator').style.display = 'block';
+	}
     if (typeof initAnalogClock === 'function') initAnalogClock();
     checkLogin();
     handleRouting();

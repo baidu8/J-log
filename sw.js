@@ -26,16 +26,26 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// 建议的 sw.js 修复代码
+// 【合并后的唯一 fetch 监听器】
 self.addEventListener('fetch', (event) => {
-    // 如果是 GitHub API 请求，直接走网络，不要拦截
+    // 1. 优先处理：如果是 GitHub API 请求，直接走网络，跳过缓存逻辑
     if (event.request.url.includes('api.github.com')) {
-        return; 
+        return; //
     }
 
+    // 2. 策略：尝试联网抓取，如果断网则 fallback 到缓存
     event.respondWith(
         fetch(event.request).catch(() => {
-            return caches.match(event.request);
+            return caches.match(event.request).then((response) => {
+                // 如果缓存中有资源，直接返回
+                if (response) {
+                    return response;
+                }
+                // 如果是页面跳转请求且没网没缓存，返回首页 index.html 作为兜底
+                if (event.request.mode === 'navigate') {
+                    return caches.match('./index.html');
+                }
+            });
         })
     );
 });
