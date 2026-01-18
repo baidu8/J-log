@@ -61,7 +61,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg); color: var
 .admin-btns { display: flex; gap: 8px; }
 
 /* 返回按钮 */
-.btn-back-wrapper { margin-bottom: 20px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
+.btn-back-wrapper { display: flex; gap: 10px; }
 .btn-back-custom { background: #f8f9fa; border: 1px solid #eee; padding: 8px 20px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: 0.3s; }
 .btn-back-custom:hover { border-color: var(--primary); color: var(--primary); box-shadow: 0 4px 12px rgba(9,132,227,0.1); }
 
@@ -75,13 +75,13 @@ body { font-family: -apple-system, sans-serif; background: var(--bg); color: var
 
 /* 弹窗样式 */
 #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-.modal-card { background: white; width: 90%; max-width: 600px; border-radius: 16px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative; }
+.modal-card { background: white; width: 90%; max-width: 600px; border-radius: 16px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative; height: auto; max-height: 90vh;}
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.close-icon { position: absolute; right: 20px; top: 20px; width: 32px; height: 32px; background: #f5f5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: 0.2s; border: 1px solid #eee; }
+.close-icon { position: absolute; right: 20px; width: 32px; height: 32px; background: #f5f5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: 0.2s; border: 1px solid #eee; }
 .close-icon:hover { background: var(--danger); color: white; transform: rotate(90deg); }
 .modal-input { width: 100%; padding: 12px; margin-top: 12px; border: 1px solid #eee; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
 .modal-input:focus { border-color: var(--primary); }
-.modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding: 15px; border-top: 1px solid #eee; background: #fff; flex-shrink: 0;}
 
 /* 分页 */
 .pagination-wrapper { display: flex; justify-content: center; padding: 30px 0; }
@@ -188,6 +188,24 @@ body { font-family: -apple-system, sans-serif; background: var(--bg); color: var
         height: 40px;
     }
 }
+
+#editor-view {
+    width: 95%;          /* 在移动端占据绝大部分宽度 */
+    max-width: 600px;    /* PC端保持适中高度 */
+    max-height: 90vh;    /* 【关键】最高不超过屏幕高度的 90% */
+    display: flex;
+    flex-direction: column; /* 纵向排列布局 */
+    overflow: hidden;    /* 整体不滚动 */
+}
+
+/* 编辑器主体区域允许滚动 */
+#editor-layout, .modal-body {
+    flex: 1;             /* 占据剩余所有空间 */
+    overflow-y: auto;    /* 【关键】如果内容长，这里会出现滚动条 */
+    padding: 15px;
+    -webkit-overflow-scrolling: touch; /* 优化移动端滚动手感 */
+}
+
 /* 扩大弹窗宽度以容纳两栏 */
 #editor-view.modal-card {
     max-width: 950px !important; 
@@ -351,4 +369,129 @@ body { font-family: -apple-system, sans-serif; background: var(--bg); color: var
 #toc-widget {
     /* 在搜索框和目录之间强制空出 20 像素 */
     margin-top: 20px !important; 
+}
+/* 让评论区容器更有层次感 */
+#giscus-container {
+    min-height: 150px;
+    width: 100%;
+    /* 解决一些高度塌陷问题 */
+    display: block; 
+}
+
+/* 如果你的 card 类没有背景色，确保这里有 */
+#comments-section {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* 适配移动端 */
+@media (max-width: 768px) {
+    #comments-section {
+        padding: 15px;
+        margin-top: 20px;
+    }
+}
+.editor-toolbar .separator {
+    color: #ddd;
+    font-style: normal;
+    margin: 0 5px;
+    align-self: center;
+}
+
+.editor-toolbar span {
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 2px 10px;
+    font-size: 13px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.editor-toolbar span:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+@media (max-width: 480px) {
+    .editor-toolbar {
+        overflow-x: auto; /* 允许横向滑动 */
+        white-space: nowrap; /* 不换行 */
+        padding-bottom: 5px;
+    }
+    
+    #editor-view {
+        width: 100%;
+        height: 100%;    /* 全屏模式 */
+        max-height: 100vh;
+        border-radius: 0; /* 手机全屏时不需要圆角 */
+    }
+}
+/* 基础按钮样式：让它们高度对齐、圆角统一 */
+.btn-action {
+    border: none;
+    padding: 6px 15px;
+    border-radius: 20px; /* 胶囊形状关键点 */
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 编辑按钮：蓝色系 */
+.btn-edit {
+    background-color: #007bff;
+    color: white;
+}
+.btn-edit:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px); /* 悬停微动感 */
+}
+
+/* 删除按钮：红色系 */
+.btn-delete {
+    background-color: #d63031; /* 对应你截图里的颜色 */
+    color: white;
+}
+.btn-delete:hover {
+    background-color: #b32d2d;
+    transform: translateY(-1px);
+}
+/* 针对内容页渲染后的图片进行限制 */
+#content-view img, 
+.markdown-body img {
+    max-width: 100%;    /* 【关键】图片最宽只能和父容器一样宽 */
+    height: auto;       /* 高度自动缩放，防止图片变形 */
+    display: block;     /* 消除图片底部的微小缝隙 */
+    margin: 15px auto;  /* 让图片居中显示，并与文字保持距离 */
+    border-radius: 8px; /* 可选：给图片加点圆角，显得更精致 */
+}
+#content-view video, 
+#content-view iframe {
+    max-width: 100%;
+    border-radius: 8px;
+}
+/* 双栏瀑布流容器 */
+.photo-layout {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 强制双栏 */
+    gap: 10px;                             /* 图片间距 */
+    margin: 20px 0;
+}
+
+/* 让容器内的图片自适应 */
+.photo-layout img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 0 !important; /* 覆盖之前全局设置的居中 margin */
+}
+
+/* 移动端自动回到单栏，保证体验 */
+@media (max-width: 600px) {
+    .photo-layout {
+        grid-template-columns: 1fr;
+    }
 }

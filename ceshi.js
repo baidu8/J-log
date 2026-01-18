@@ -7,6 +7,22 @@ let totalGistCount = 0; // 记录 Gist 总数
 let isLoggedIn = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+	// 修改后的注册代码
+	if ('serviceWorker' in navigator) {
+	    window.addEventListener('load', () => {
+	        navigator.serviceWorker.register('./sw.js').then(reg => {
+	            // 只有在第一次成功安装时才刷新，避免干扰 API 加载
+	            reg.onupdatefound = () => {
+	                const installingWorker = reg.installing;
+	                installingWorker.onstatechange = () => {
+	                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+	                        console.log('新版本已就绪，请刷新页面');
+	                    }
+	                };
+	            };
+	        });
+	    });
+	}
     if (typeof initAnalogClock === 'function') initAnalogClock();
     checkLogin();
     handleRouting();
@@ -169,6 +185,23 @@ async function readArticle(id) {
         }
 
         body.innerHTML = marked.parse(content);
+								// ✨ 新增：提取并激活内容页中的 style 和 script
+								const rawStyles = body.querySelectorAll('style');
+								rawStyles.forEach(style => {
+								    // 将 Markdown 里的 style 移动到 head 中使其生效
+								    document.head.appendChild(style); 
+								});
+								
+								const rawScripts = body.querySelectorAll('script');
+								rawScripts.forEach(oldScript => {
+								    const newScript = document.createElement('script');
+								    // 复制所有属性（如 src 等）
+								    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+								    // 复制脚本内容
+								    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+								    // 重新插入 DOM 以激活执行
+								    oldScript.parentNode.replaceChild(newScript, oldScript);
+								});
         if (window.Prism) Prism.highlightAllUnder(body);
         addCopyButtons(); 
         
@@ -189,7 +222,7 @@ async function readArticle(id) {
         console.error(e);
         body.innerHTML = '文章内容加载失败。'; 
     }
-				loadComments(id);
+				loadGiscus(id);
 }
 
 function addCopyButtons() {
@@ -231,8 +264,11 @@ function generateTOC(container) {
 }
 
 function showListUI() { 
-	const giscus = document.getElementById('giscus-container');
-	    if (giscus) giscus.innerHTML = '';
+	   const giscus = document.getElementById('giscus-container');
+	       if (giscus) giscus.innerHTML = '';
+					// 可以在这里通过重置样式表来清理
+				const dynamicStyles = document.querySelectorAll('head style:not(#main-style)');
+				dynamicStyles.forEach(s => s.remove());
     const adminTools = document.getElementById('admin-tools');
     if (adminTools) adminTools.style.display = 'none';
     document.title = "J-log"; 
@@ -253,7 +289,6 @@ function showEditor() {
     document.getElementById('editor-preview').innerHTML = marked.parse(document.getElementById('post-body').value || "");
 }
 function hideEditor() { document.getElementById('modal-overlay').style.display='none'; document.body.style.overflow='auto'; document.getElementById('edit-gist-id').value=''; }
-function handleOverlayClick(e) { if(e.target.id === 'modal-overlay') hideEditor(); }
 
 async function editGist(id) {
     const res = await fetch(`https://api.github.com/gists/${id}`);
@@ -419,7 +454,7 @@ function loadGiscus(id) {
     script.setAttribute("data-mapping", "specific");
     script.setAttribute("data-term", id); 
     
-    script.setAttribute("data-reactions-enabled", "1");
+    script.setAttribute("data-reactions-enabled", "0");
     script.setAttribute("data-emit-metadata", "0");
     script.setAttribute("data-input-position", "top");
     script.setAttribute("data-theme", "light");
@@ -431,3 +466,70 @@ function loadGiscus(id) {
 
     container.appendChild(script);
 }
+function insertTag(type) {
+    // 【关键修改】确保这里指向的是内容框的 ID，而不是文件名框 post-file
+    const textarea = document.getElementById('post-body') || document.querySelector('#editor-layout textarea'); 
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selected = text.substring(start, end);
+    
+    let insertText = '';
+    let cursorOffset = 0; // 用于控制插入后光标的位置
+
+    switch(type) {
+        case 'h1': insertText = `# ${selected || '一级标题'}`; break;
+        case 'h2': insertText = `## ${selected || '二级标题'}`; break;
+        case 'h3': insertText = `### ${selected || '三级标题'}`; break;
+        case 'bold': insertText = `**${selected || '粗体文字'}**`; cursorOffset = selected ? 0 : 2; break;
+        case 'italic': insertText = `*${selected || '斜体文字'}*`; cursorOffset = selected ? 0 : 1; break;
+        case 'quote': insertText = `\n> ${selected || '引用文字'}\n`; break;
+        case 'hr': insertText = `\n---\n`; break;
+        case 'ul': insertText = `\n- ${selected || '列表项目'}`; break;
+        case 'ol': insertText = `\n1. ${selected || '列表项目'}`; break;
+        case 'link': 
+            insertText = `[${selected || '显示文字'}]()\n`; 
+            cursorOffset = (selected || '显示文字').length + 3; 
+            break;
+        case 'img': 
+            insertText = `![${selected || '图片描述'}]()\n`; 
+            cursorOffset = (selected || '图片描述').length + 4; 
+            break;
+        // HTML 嵌入代码快捷键
+        case 'video':
+            insertText = `\n<video controls width="100%" src=""></video>\n`;
+            cursorOffset = 36; // 光标停在链接位置
+            break;
+        case 'iframe':
+            insertText = `\n<iframe src="" width="100%" height="400px" frameborder="0"></iframe>\n`;
+            cursorOffset = 14; 
+            break;
+								case 'photoLayout':
+								    // 预设好 4 张图片的占位符，方便你直接填链接
+								    insertText = `\n<div class="photo-layout">\n<img src="">\n</div>\n`;
+								    cursorOffset = 38; // 让光标在插入后自动停在第一个链接处
+								    break;
+    }
+
+    // 执行替换
+    textarea.value = text.substring(0, start) + insertText + text.substring(end);
+    
+    // 重新聚焦并计算光标位置
+    textarea.focus();
+    if (cursorOffset > 0) {
+        const newPos = start + cursorOffset;
+        textarea.setSelectionRange(newPos, newPos);
+    } else {
+        // 默认光标跳到插入文字的最后
+        const newPos = start + insertText.length;
+        textarea.setSelectionRange(newPos, newPos);
+    }
+}
+// 修正后的保险逻辑
+window.onbeforeunload = function() {
+    const textarea = document.getElementById('post-body'); // 统一使用 post-body
+    if (textarea && textarea.value.trim().length > 0) {
+        return "您有内容尚未保存！";
+    }
+};
