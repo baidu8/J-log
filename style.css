@@ -537,3 +537,13 @@ body { font-family: -apple-system, sans-serif; background: var(--bg); color: var
         display: none;
     }
 }
+/* 优化工具栏按钮的手感 */
+.editor-toolbar span {
+    transition: background-color 0.2s, transform 0.1s;
+    user-select: none; /* 防止长按选中文本 */
+}
+
+.editor-toolbar span:active {
+    background-color: #e1e1e1 !important; /* 按下去变深色 */
+    transform: scale(0.95);             /* 按下去轻微缩小 */
+}

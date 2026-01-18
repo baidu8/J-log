@@ -37,6 +37,30 @@ document.addEventListener('DOMContentLoaded', () => {
 	// 初始化检查
 	if (!navigator.onLine) {
 	    document.getElementById('offline-indicator').style.display = 'block';
+					// 3. --- 在这里【插入】新代码 ---
+					    let deferredPrompt;
+					    window.addEventListener('beforeinstallprompt', (e) => {
+					        e.preventDefault(); // 阻止浏览器默认的小弹窗
+					        deferredPrompt = e;  // 暂存事件
+					        
+					        // 只有当检测到可以安装时，我们才把提示条显示出来
+					        const indicator = document.getElementById('offline-indicator');
+					        if (indicator) {
+					            indicator.innerText = "✨ 点击将 J-log 博客添加到桌面";
+					            indicator.style.background = "#0984e3"; 
+					            indicator.style.display = "block";
+					            
+					            indicator.onclick = () => {
+					                deferredPrompt.prompt(); // 弹出真正的安装询问框
+					                deferredPrompt.userChoice.then((result) => {
+					                    if (result.outcome === 'accepted') {
+					                        indicator.style.display = 'none';
+					                    }
+					                });
+					            };
+					        }
+					    });
+					    // --- 插入结束 ---
 	}
     if (typeof initAnalogClock === 'function') initAnalogClock();
     checkLogin();

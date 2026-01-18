@@ -33,4 +33,5 @@
   "background_color": "#f8f9fa",
   "display": "standalone",
   "orientation": "portrait-any"
+		"theme_color": "#ffffff",
 }
