@@ -502,3 +502,38 @@ body { font-family: -apple-system, sans-serif; background: var(--bg); color: var
     font-weight: 500;
     letter-spacing: 0.5px;
 }
+/* 针对手机端编辑器工具栏的精准适配 */
+@media screen and (max-width: 600px) {
+    /* 1. 强制工具栏不换行并支持横向滚动 */
+    .editor-toolbar {
+        display: flex !important;
+        flex-wrap: nowrap !important; /* 覆盖内联的 wrap，防止按钮折行 */
+        overflow-x: auto !important;  /* 开启横向滚动 */
+        padding: 10px !important;
+        gap: 12px !important;         /* 适当加大间距，方便手指点按 */
+        -webkit-overflow-scrolling: touch; /* 让 iOS 滚动顺滑 */
+        background: #f9f9f9;
+        border-bottom: 1px solid #eee;
+    }
+
+    /* 2. 优化工具栏内的按钮（span 标签） */
+    .editor-toolbar span {
+        flex: 0 0 auto !important;    /* 绝对禁止按钮被压缩变形 */
+        min-width: 44px;              /* 增加点击热区 */
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 0 8px !important;
+        font-size: 14px;
+        white-space: nowrap;          /* 保证按钮文字不换行 */
+        cursor: pointer;
+    }
+
+    /* 3. 隐藏横向滚动条，保持界面简洁（可选） */
+    .editor-toolbar::-webkit-scrollbar {
+        display: none;
+    }
+}
