@@ -1,5 +1,9 @@
 :root { --primary: #0984e3; --text: #2d3436; --light: #636e72; --bg: #f5f7fa; --card: #ffffff; --danger: #d63031; }
-
+html {
+    /* 预留滚动条间隙，防止内容左右跳动 */
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+}
 body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
 .container { max-width: 1000px; margin: 0 auto; padding: 0 15px; box-sizing: border-box; }
 
@@ -400,12 +404,15 @@ body { font-family: -apple-system, sans-serif; background: var(--bg); color: var
 }
 
 .editor-toolbar span {
-    background: #fff;
     border: 1px solid #eee;
     padding: 2px 10px;
-    font-size: 13px;
+    font-size: 14px;
     border-radius: 3px;
     cursor: pointer;
+    min-width: 30px !important;
+    height: 20px;
+    line-height: 20px;
+    background: white;
 }
 
 .editor-toolbar span:hover {
@@ -502,43 +509,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg); color: var
     font-weight: 500;
     letter-spacing: 0.5px;
 }
-/* 针对手机端编辑器工具栏的精准适配 */
-@media screen and (max-width: 600px) {
-    /* 1. 强制工具栏不换行并支持横向滚动 */
-    .editor-toolbar {
-        display: flex !important;
-        flex-wrap: nowrap !important; /* 覆盖内联的 wrap，防止按钮折行 */
-        overflow-x: auto !important;  /* 开启横向滚动 */
-        padding: 10px !important;
-        gap: 12px !important;         /* 适当加大间距，方便手指点按 */
-        -webkit-overflow-scrolling: touch; /* 让 iOS 滚动顺滑 */
-        background: #f9f9f9;
-        border-bottom: 1px solid #eee;
-    }
 
-    /* 2. 优化工具栏内的按钮（span 标签） */
-    .editor-toolbar span {
-        flex: 0 0 auto !important;    /* 绝对禁止按钮被压缩变形 */
-        min-width: 44px;              /* 增加点击热区 */
-        flex-shrink: 0 !important; /* 禁止压缩 */
-        min-width: 50px !important; /* 确保有足够的宽度显示文字 */
-        height: 32px;
-        line-height: 32px;
-        text-align: center;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 0 8px !important;
-        font-size: 14px;
-        white-space: nowrap;          /* 保证按钮文字不换行 */
-        cursor: pointer;
-    }
-
-    /* 3. 隐藏横向滚动条，保持界面简洁（可选） */
-    .editor-toolbar::-webkit-scrollbar {
-        display: none;
-    }
-}
 /* 优化工具栏按钮的手感 */
 .editor-toolbar span {
     transition: background-color 0.2s, transform 0.1s;
@@ -575,5 +546,71 @@ body { font-family: -apple-system, sans-serif; background: var(--bg); color: var
         display: flex;
         justify-content: space-around;
         z-index: 100;
+    }
+}
+/* 强制长字符串换行，防止撑破页面布局 */
+body, .post-content, .markdown-body {
+    word-wrap: break-word !important;
+    word-break: break-all !important; /* 强制在任何字符间断行 */
+    overflow-wrap: break-word !important;
+}
+
+/* 针对正文中的链接 */
+a {
+    word-break: break-all !important;
+}
+/* 针对手机端编辑器工具栏的精准适配 */
+@media screen and (max-width: 600px) {
+    /* 工具栏父容器：禁止换行，允许滚动 */
+    .editor-toolbar {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        gap: 3px !important;
+        padding: 5px !important;
+        /* 隐藏滚动条 */
+        scrollbar-width: none; 
+        flex-shrink: 0;
+    }
+
+    /* 工具栏内的按钮：关键是 flex-shrink: 0 */
+    .editor-toolbar span {
+        flex: 0 0 auto !important;    /* 核心：0表示不放大，0表示绝对不缩小 */
+        min-width: 60px !important;   /* 强制给个最小宽度 */
+        text-align: center;
+        white-space: nowrap !important; /* 文字不许换行 */
+        background: #f0f0f0;
+        padding: 6px 12px !important;
+        border-radius: 4px;
+        font-size: 14px;
+        flex-shrink: 0 !important; /* 禁止压缩 */
+        min-width: 30px !important; /* 确保有足够的宽度显示文字 */
+        height: 20px;
+        line-height: 20px;
+        background: white;
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+    /* 3. 隐藏横向滚动条，保持界面简洁（可选） */
+    .editor-toolbar::-webkit-scrollbar {
+        display: none;
+    }
+}
+/* 仅针对手机端（屏幕宽度小于 800px）隐藏滚动条 */
+@media screen and (max-width: 800px) {
+    html, body {
+        /* Firefox 隐藏滚动条 */
+        scrollbar-width: none !important;
+        /* IE/Edge 隐藏滚动条 */
+        -ms-overflow-style: none !important;
+    }
+
+    /* Chrome, Safari, Opera (手机端最常用) 隐藏滚动条 */
+    html::-webkit-scrollbar, 
+    body::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
     }
 }

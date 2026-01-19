@@ -6,6 +6,33 @@ let currentPage = 1;
 let totalGistCount = 0; // 记录 Gist 总数
 let isLoggedIn = false;
 
+// 全局拦截：专门修复手机端目录点击闪回首页的问题
+window.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (link && link.getAttribute('href')) {
+        const href = link.getAttribute('href');
+        // 如果点击的是以 #h 开头的目录链接
+        if (href.startsWith('#h') || href.startsWith('#th-')) {
+            e.preventDefault(); // 阻止默认跳转
+            const targetId = href.substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                // 手动执行平滑滚动
+                const topOffset = 80; // 避开顶部导航栏的高度
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - topOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+                // 更新 hash 但不触发 hashchange 路由
+                history.pushState(null, null, href);
+            }
+        }
+    }
+}, true);
+
 document.addEventListener('DOMContentLoaded', () => {
 	// 修改后的注册代码
 	if ('serviceWorker' in navigator) {
@@ -544,11 +571,11 @@ function insertTag(type) {
             insertText = `\n<iframe src="" width="100%" height="400px" frameborder="0"></iframe>\n`;
             cursorOffset = 14; 
             break;
-								case 'photoLayout':
-								    // 预设好 4 张图片的占位符，方便你直接填链接
-								    insertText = `\n<div class="photo-layout">\n<img src="">\n</div>\n`;
-								    cursorOffset = 38; // 让光标在插入后自动停在第一个链接处
-								    break;
+		case 'photoLayout':
+		    // 预设好 4 张图片的占位符，方便你直接填链接
+		    insertText = `\n<div class="photo-layout">\n<img src="">\n<img src="">\n<img src="">\n<img src="">\n<img src="">\n</div>\n`;
+		    cursorOffset = 38; // 让光标在插入后自动停在第一个链接处
+		    break;
     }
 
     // 执行替换

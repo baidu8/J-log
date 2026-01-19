@@ -6,62 +6,89 @@ let currentPage = 1;
 let totalGistCount = 0; // 记录 Gist 总数
 let isLoggedIn = false;
 
+// 全局拦截：专门修复手机端目录点击闪回首页的问题
+window.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (link && link.getAttribute('href')) {
+        const href = link.getAttribute('href');
+        // 如果点击的是以 #h 开头的目录链接
+        if (href.startsWith('#h') || href.startsWith('#th-')) {
+            e.preventDefault(); // 阻止默认跳转
+            const targetId = href.substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                // 手动执行平滑滚动
+                const topOffset = 80; // 避开顶部导航栏的高度
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - topOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+                // 更新 hash 但不触发 hashchange 路由
+                history.pushState(null, null, href);
+            }
+        }
+    }
+}, true);
+
 document.addEventListener('DOMContentLoaded', () => {
-	// 修改后的注册代码
-	if ('serviceWorker' in navigator) {
-	    window.addEventListener('load', () => {
-	        navigator.serviceWorker.register('./sw.js').then(reg => {
-	            // 只有在第一次成功安装时才刷新，避免干扰 API 加载
-	            reg.onupdatefound = () => {
-	                const installingWorker = reg.installing;
-	                installingWorker.onstatechange = () => {
-	                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-	                        console.log('新版本已就绪，请刷新页面');
-	                    }
-	                };
-	            };
-	        });
-	    });
-	}
-	// 监听网络状态切换
-	window.addEventListener('online', () => {
-	    document.getElementById('offline-indicator').style.display = 'none';
-	    console.log('网络已恢复');
-	});
-	
-	window.addEventListener('offline', () => {
-	    document.getElementById('offline-indicator').style.display = 'block';
-	    console.log('网络已断开');
-	});
-	
-	// 初始化检查
-	if (!navigator.onLine) {
-	    document.getElementById('offline-indicator').style.display = 'block';
-					// 3. --- 在这里【插入】新代码 ---
-					    let deferredPrompt;
-					    window.addEventListener('beforeinstallprompt', (e) => {
-					        e.preventDefault(); // 阻止浏览器默认的小弹窗
-					        deferredPrompt = e;  // 暂存事件
-					        
-					        // 只有当检测到可以安装时，我们才把提示条显示出来
-					        const indicator = document.getElementById('offline-indicator');
-					        if (indicator) {
-					            indicator.innerText = "✨ 点击将 J-log 博客添加到桌面";
-					            indicator.style.background = "#0984e3"; 
-					            indicator.style.display = "block";
-					            
-					            indicator.onclick = () => {
-					                deferredPrompt.prompt(); // 弹出真正的安装询问框
-					                deferredPrompt.userChoice.then((result) => {
-					                    if (result.outcome === 'accepted') {
-					                        indicator.style.display = 'none';
-					                    }
-					                });
-					            };
-					        }
-					    });
-					    // --- 插入结束 ---
-	}
+    // 修改后的注册代码
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                // 只有在第一次成功安装时才刷新，避免干扰 API 加载
+                reg.onupdatefound = () => {
+                    const installingWorker = reg.installing;
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('新版本已就绪，请刷新页面');
+                        }
+                    };
+                };
+            });
+        });
+    }
+    // 监听网络状态切换
+    window.addEventListener('online', () => {
+        document.getElementById('offline-indicator').style.display = 'none';
+        console.log('网络已恢复');
+    });
+    
+    window.addEventListener('offline', () => {
+        document.getElementById('offline-indicator').style.display = 'block';
+        console.log('网络已断开');
+    });
+    
+    // 初始化检查
+    if (!navigator.onLine) {
+        document.getElementById('offline-indicator').style.display = 'block';
+                    // 3. --- 在这里【插入】新代码 ---
+                        let deferredPrompt;
+                        window.addEventListener('beforeinstallprompt', (e) => {
+                            e.preventDefault(); // 阻止浏览器默认的小弹窗
+                            deferredPrompt = e;  // 暂存事件
+                            
+                            // 只有当检测到可以安装时，我们才把提示条显示出来
+                            const indicator = document.getElementById('offline-indicator');
+                            if (indicator) {
+                                indicator.innerText = "✨ 点击将 J-log 博客添加到桌面";
+                                indicator.style.background = "#0984e3"; 
+                                indicator.style.display = "block";
+                                
+                                indicator.onclick = () => {
+                                    deferredPrompt.prompt(); // 弹出真正的安装询问框
+                                    deferredPrompt.userChoice.then((result) => {
+                                        if (result.outcome === 'accepted') {
+                                            indicator.style.display = 'none';
+                                        }
+                                    });
+                                };
+                            }
+                        });
+                        // --- 插入结束 ---
+    }
     if (typeof initAnalogClock === 'function') initAnalogClock();
     checkLogin();
     handleRouting();
@@ -224,23 +251,23 @@ async function readArticle(id) {
         }
 
         body.innerHTML = marked.parse(content);
-								// ✨ 新增：提取并激活内容页中的 style 和 script
-								const rawStyles = body.querySelectorAll('style');
-								rawStyles.forEach(style => {
-								    // 将 Markdown 里的 style 移动到 head 中使其生效
-								    document.head.appendChild(style); 
-								});
-								
-								const rawScripts = body.querySelectorAll('script');
-								rawScripts.forEach(oldScript => {
-								    const newScript = document.createElement('script');
-								    // 复制所有属性（如 src 等）
-								    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-								    // 复制脚本内容
-								    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-								    // 重新插入 DOM 以激活执行
-								    oldScript.parentNode.replaceChild(newScript, oldScript);
-								});
+                                // ✨ 新增：提取并激活内容页中的 style 和 script
+                                const rawStyles = body.querySelectorAll('style');
+                                rawStyles.forEach(style => {
+                                    // 将 Markdown 里的 style 移动到 head 中使其生效
+                                    document.head.appendChild(style); 
+                                });
+                                
+                                const rawScripts = body.querySelectorAll('script');
+                                rawScripts.forEach(oldScript => {
+                                    const newScript = document.createElement('script');
+                                    // 复制所有属性（如 src 等）
+                                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                                    // 复制脚本内容
+                                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                                    // 重新插入 DOM 以激活执行
+                                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                                });
         if (window.Prism) Prism.highlightAllUnder(body);
         addCopyButtons(); 
         
@@ -261,7 +288,7 @@ async function readArticle(id) {
         console.error(e);
         body.innerHTML = '文章内容加载失败。'; 
     }
-				loadGiscus(id);
+                loadGiscus(id);
 }
 
 function addCopyButtons() {
@@ -303,11 +330,11 @@ function generateTOC(container) {
 }
 
 function showListUI() { 
-	   const giscus = document.getElementById('giscus-container');
-	       if (giscus) giscus.innerHTML = '';
-					// 可以在这里通过重置样式表来清理
-				const dynamicStyles = document.querySelectorAll('head style:not(#main-style)');
-				dynamicStyles.forEach(s => s.remove());
+       const giscus = document.getElementById('giscus-container');
+           if (giscus) giscus.innerHTML = '';
+                    // 可以在这里通过重置样式表来清理
+                const dynamicStyles = document.querySelectorAll('head style:not(#main-style)');
+                dynamicStyles.forEach(s => s.remove());
     const adminTools = document.getElementById('admin-tools');
     if (adminTools) adminTools.style.display = 'none';
     document.title = "J-log"; 
@@ -544,11 +571,11 @@ function insertTag(type) {
             insertText = `\n<iframe src="" width="100%" height="400px" frameborder="0"></iframe>\n`;
             cursorOffset = 14; 
             break;
-								case 'photoLayout':
-								    // 预设好 4 张图片的占位符，方便你直接填链接
-								    insertText = `\n<div class="photo-layout">\n<img src="">\n</div>\n`;
-								    cursorOffset = 38; // 让光标在插入后自动停在第一个链接处
-								    break;
+        case 'photoLayout':
+            // 预设好 4 张图片的占位符，方便你直接填链接
+            insertText = `\n<div class="photo-layout">\n<img src="">\n<img src="">\n<img src="">\n<img src="">\n<img src="">\n</div>\n`;
+            cursorOffset = 38; // 让光标在插入后自动停在第一个链接处
+            break;
     }
 
     // 执行替换

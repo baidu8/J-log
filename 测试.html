@@ -11,6 +11,7 @@
     <link rel="shortcut icon" href="img/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
     <link rel="manifest" href="img/web-app-manifest-192x192.png">
+    <meta name="theme-color" content="#ffffff">
     
     <meta name="description" content="江大爷的个人日志，记录心得、生活思考。">
     <meta name="author" content="江大爷">
@@ -27,14 +28,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
-	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </head>
 <body>
-	<div id="offline-indicator" style="display:none; background: #ff7675; color: white; text-align: center; padding: 10px; position: fixed; top: 0; width: 100%; z-index: 9999;">
-	    📡 当前处于离线模式，正在为您展示缓存内容
-	</div>
+    <div id="offline-indicator" style="display:none; background: #ff7675; color: white; text-align: center; padding: 10px; position: fixed; top: 0; width: 100%; z-index: 9999;">
+        📡 当前处于离线模式，正在为您展示缓存内容
+    </div>
     <div id="modal-overlay">
         <div id="editor-view" class="modal-card scale-in">
             <div class="modal-header">
@@ -49,8 +50,8 @@
                 <span onclick="insertTag('h2')">H2</span>
                 <span onclick="insertTag('h3')">H3</span>
                 <i class="separator">|</i>
-                <span onclick="insertTag('bold')"><b>B</b></span>
-                <span onclick="insertTag('italic')"><i>I</i></span>
+                <span onclick="insertTag('bold')"><b>B</b> 粗体</span>
+                <span onclick="insertTag('italic')"><i>I</i> 斜体</span>
                 <span onclick="insertTag('quote')">❝ 引用</span>
                 <span onclick="insertTag('hr')">― 横线</span>
                 <i class="separator">|</i>
@@ -61,7 +62,7 @@
                 <i class="separator">|</i>
                 <span onclick="insertTag('video')" title="插入视频标签">📹视频</span>
                 <span onclick="insertTag('iframe')" title="插入嵌入框架">网页嵌入</span>
-																<span class="tool-btn" onclick="insertTag('photoLayout')" title="双栏图片布局">📸 摄影集</span>
+                                                                <span class="tool-btn" onclick="insertTag('photoLayout')" title="双栏图片布局">📸 摄影集</span>
             </div>
             <div class="editor-layout">
                 <textarea id="post-body" class="modal-input" placeholder="Markdown 内容..." rows="12"></textarea>
@@ -158,19 +159,19 @@
             </div>
         </aside>
     </main>
-				
+                
 <button id="back-to-top" title="返回顶部">↑️</button>
 
-				<footer class="site-footer">
-				    <div class="footer-container">
-				        <div class="footer-left">
-				            © 2026 • <b>江大爷</b>
-				        </div>
-				        <div class="footer-right">
-				            Built with <a href="https://gist.github.com" target="_blank">Gist</a>
-				        </div>
-				    </div>
-				</footer>
+                <footer class="site-footer">
+                    <div class="footer-container">
+                        <div class="footer-left">
+                            © 2026 • <b>江大爷</b>
+                        </div>
+                        <div class="footer-right">
+                            Built with <a href="https://gist.github.com" target="_blank">Gist</a>
+                        </div>
+                    </div>
+                </footer>
     <script src="clock.js"></script>
     <script src="ceshi.js"></script>
 </body>
