@@ -394,14 +394,47 @@ function renderChart(gists) {
     if (!chartDom) return;
     const myChart = echarts.init(chartDom);
     const stats = {};
-    gists.forEach(g => { const m = g.created_at.substring(0, 7); stats[m] = (stats[m] || 0) + 1; });
-    const months = Object.keys(stats).sort();
+
+    gists.forEach(g => { 
+        if (g.created_at) {
+            const m = g.created_at.substring(0, 7); 
+            stats[m] = (stats[m] || 0) + 1; 
+        }
+    });
+
+    // 核心修复：严谨排序，确保 2026 在最后
+    const months = Object.keys(stats).sort((a, b) => new Date(a) - new Date(b));
+
     myChart.setOption({
         title: { text: '发布活跃度', left: 'center', textStyle: {fontSize: 14, color: '#999'} },
-        xAxis: { type: 'category', data: months },
+        tooltip: { trigger: 'axis' },
+        grid: { left: '10%', right: '10%', bottom: '25%' }, // 给底部标签留出空间
+        xAxis: { 
+            type: 'category', 
+            data: months,
+            axisLabel: { 
+                fontSize: 10, 
+                color: '#999',
+                interval: 0,    // ✨ 强制显示所有月份标签，不许隐藏
+                rotate: 45      // ✨ 手机端标签倾斜 45 度，防止重叠显示不下
+            }
+        },
         yAxis: { type: 'value', minInterval: 1 },
-        series: [{ data: months.map(m => stats[m]), type: 'bar', itemStyle: {color: '#0984e3', borderRadius: [4, 4, 0, 0]} }]
+        // ✨ 新增：手机端允许横向缩放/滑动查看长轴
+        dataZoom: [{
+            type: 'inside', 
+            start: 0, 
+            end: 100
+        }],
+        series: [{ 
+            data: months.map(m => stats[m]), 
+            type: 'bar', 
+            itemStyle: { color: '#0984e3', borderRadius: [4, 4, 0, 0] },
+            barMaxWidth: 20 
+        }]
     });
+    
+    window.addEventListener('resize', () => myChart.resize());
 }
 
 // 返回顶部功能
