@@ -614,3 +614,47 @@ a {
         height: 0 !important;
     }
 }
+  /* 容器：用来控制比例，防止视频等内容变形 */
+  .iframe-container {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 比例 (9 / 16 = 0.5625) */
+    overflow: hidden;
+  }
+
+  /* 样式：完全覆盖容器 */
+  .custom-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none; /* 替代 frameborder="0" */
+    border-radius: 8px; /* 可选：圆角更美观 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* 可选：阴影增加深度感 */
+  }
+  /* 视频容器，限制最大宽度并居中 */
+.video-wrapper {
+  max-width: 800px;
+  margin: 20px auto;
+  border-radius: 12px;
+  overflow: hidden; /* 确保视频圆角生效 */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  background-color: #000; /* 视频未加载时的背景底色 */
+}
+
+.custom-video {
+  display: block;
+  width: 100%;    /* 宽度自适应容器 */
+  height: auto;   /* 高度按比例缩放 */
+  outline: none;
+  
+  /* 核心技巧：保持比例，类似于 background-size: cover */
+  /* 如果你想让视频填充固定尺寸但不变形，可以使用 object-fit */
+  object-fit: cover; 
+}
+
+/* 针对全屏模式的控制条美化（可选） */
+.custom-video::-webkit-media-controls-enclosure {
+  border-radius: 10px;
+}

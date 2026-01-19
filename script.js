@@ -430,7 +430,7 @@ function renderChart(gists) {
             data: months.map(m => stats[m]), 
             type: 'bar', 
             itemStyle: { color: '#0984e3', borderRadius: [4, 4, 0, 0] },
-            barMaxWidth: 20 
+            barMaxWidth: 15 // ✨ 手机端柱子窄一点更好看
         }]
     });
     
@@ -597,12 +597,15 @@ function insertTag(type) {
             break;
         // HTML 嵌入代码快捷键
         case 'video':
-            insertText = `\n<video controls width="100%" src=""></video>\n`;
-            cursorOffset = 36; // 光标停在链接位置
+            insertText = `\n<div class="video-wrapper">
+<video class="custom-video" controls preload="metadata" poster="" playsinline webkit-playsinline muted><source src="" type="video/mp4"><source src="movie.webm" type="video/webm">您的浏览器不支持 HTML5 视频播放。</video></div>\n`;
+            cursorOffset = 145; // 光标停在链接位置
             break;
         case 'iframe':
-            insertText = `\n<iframe src="" width="100%" height="400px" frameborder="0"></iframe>\n`;
-            cursorOffset = 14; 
+            insertText = `\n<div class="iframe-container">\n<iframe src="" title="描述内容" class="custom-iframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+    allowfullscreen
+    loading="lazy" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>\n</div>\n`;
+            cursorOffset = 45; 
             break;
 		case 'photoLayout':
 		    // 预设好 4 张图片的占位符，方便你直接填链接
