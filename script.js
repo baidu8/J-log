@@ -379,7 +379,11 @@ async function submitGist() {
             files: { [document.getElementById('post-file').value || 'article.md']: { content: document.getElementById('post-body').value } }
         })
     });
-    if (res.ok) location.reload();
+    // 在刷新之前，先把拦截功能关掉
+    if (res.ok) {
+        window.onbeforeunload = null; 
+        location.reload();
+    };
 }
 
 async function deleteGist(id) {
