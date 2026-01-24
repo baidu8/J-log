@@ -234,6 +234,9 @@ async function readArticle(id) {
     document.getElementById('list-view').style.display = 'none';
     document.getElementById('content-view').style.display = 'block';
     body.innerHTML = '<div style="padding:40px;text-align:center;color:#999">正在加载内容...</div>';
+    // 进入新文章时，先把旧的文件名条清空
+    const oldInfo = document.getElementById('post-detail-info');
+    if (oldInfo) oldInfo.innerHTML = '';
 
     try {
         const res = await fetch(`https://api.github.com/gists/${id}`);
@@ -241,6 +244,32 @@ async function readArticle(id) {
         const title = data.description || "未命名文章";
         const content = data.files[Object.keys(data.files)[0]].content;
         document.getElementById('post-detail-title').innerText = title;
+								// 获取文件名和原始链接
+								const fileName = Object.keys(data.files)[0];
+								const gistUrl = data.html_url;
+								
+								// 找到详情页存放文件名的容器（如果没有就创建一个）
+								let infoBar = document.getElementById('post-detail-info');
+								if (!infoBar) {
+								    // 如果页面没这个容器，就在标题后面插入一个
+								    const titleEl = document.getElementById('post-detail-title');
+								    infoBar = document.createElement('div');
+								    infoBar.id = 'post-detail-info';
+								    infoBar.style = "margin: 10px 0 20px 0; border-bottom: 1px dashed #eee; padding-bottom: 10px;";
+								    titleEl.parentNode.insertBefore(infoBar, titleEl.nextSibling);
+								}
+								
+								// 填充带链接的文件名
+								infoBar.innerHTML = `
+								    <a href="${gistUrl}" target="_blank" title="前往 Gist 查看源码" style="text-decoration:none;">
+								        <span style="font-size: 0.85rem; color: #666; background: #f0f2f5; padding: 4px 10px; border-radius: 4px; font-family: monospace; cursor: pointer; border: 1px solid #e0e4e8;">
+								            📄 ${fileName}
+								        </span>
+								    </a>
+								    <span style="font-size: 0.85rem; color: #b2bec3; margin-left: 15px;">
+								        📅 ${new Date(data.created_at).toLocaleDateString()}
+								    </span>
+								`;
         document.title = `${title} - J-log`;
         
         const token = localStorage.getItem('gh_token');
@@ -639,3 +668,80 @@ window.onbeforeunload = function() {
         return "您有内容尚未保存！";
     }
 };
+/* ==========================================
+   全屏看图终极版 (带模糊背景、切换、加载动画)
+   ========================================== */
+(function() {
+    let currentImgIndex = 0;
+    let articleImages = [];
+
+    // 监听全局点击
+    document.addEventListener('click', (e) => {
+        // 1. 判断是否点击了文章内的图片
+        if (e.target.tagName === 'IMG' && e.target.closest('#markdown-body')) {
+            const viewer = document.getElementById('image-viewer');
+            if (!viewer) return;
+
+            // 扫描文章内所有图片并保存到数组
+            articleImages = Array.from(document.querySelectorAll('#markdown-body img'));
+            currentImgIndex = articleImages.indexOf(e.target);
+            
+            viewer.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            updateViewerContent(currentImgIndex);
+        }
+
+        // 2. 处理查看器内部按钮点击
+        const viewer = document.getElementById('image-viewer');
+        if (!viewer || viewer.style.display !== 'flex') return;
+
+        if (e.target.id === 'close-viewer' || e.target.id === 'image-viewer') {
+            viewer.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        } else if (e.target.id === 'prev-image') {
+            if (currentImgIndex > 0) updateViewerContent(currentImgIndex - 1);
+        } else if (e.target.id === 'next-image') {
+            if (currentImgIndex < articleImages.length - 1) updateViewerContent(currentImgIndex + 1);
+        }
+    });
+
+    // 核心渲染函数
+    function updateViewerContent(index) {
+        const fullImg = document.getElementById('full-image');
+        const spinner = document.getElementById('image-spinner');
+        const prevBtn = document.getElementById('prev-image');
+        const nextBtn = document.getElementById('next-image');
+
+        if (!fullImg || index < 0 || index >= articleImages.length) return;
+
+        currentImgIndex = index;
+        
+        // 显示加载动画，隐藏旧图
+        if (spinner) spinner.style.display = 'block';
+        fullImg.style.display = 'none';
+        fullImg.style.opacity = '0';
+
+        // 切换新图
+        fullImg.src = articleImages[index].src;
+
+        fullImg.onload = () => {
+            if (spinner) spinner.style.display = 'none';
+            fullImg.style.display = 'block';
+            setTimeout(() => { fullImg.style.opacity = '1'; }, 50); // 小延迟确保动画触发
+        };
+
+        // 按钮显示控制
+        if (prevBtn) prevBtn.style.visibility = index === 0 ? 'hidden' : 'visible';
+        if (nextBtn) nextBtn.style.visibility = index === articleImages.length - 1 ? 'hidden' : 'visible';
+    }
+
+    // 键盘支持
+    document.addEventListener('keydown', (e) => {
+        const viewer = document.getElementById('image-viewer');
+        if (viewer && viewer.style.display === 'flex') {
+            if (e.key === 'ArrowLeft') document.getElementById('prev-image')?.click();
+            if (e.key === 'ArrowRight') document.getElementById('next-image')?.click();
+            if (e.key === 'Escape') document.getElementById('close-viewer')?.click();
+        }
+    });
+})();
