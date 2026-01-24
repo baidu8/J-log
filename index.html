@@ -174,5 +174,14 @@
 				</footer>
     <script src="clock.js"></script>
     <script src="script.js"></script>
+				<div id="image-viewer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center; user-select:none; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+				    <div id="image-spinner" style="position:absolute; width:40px; height:40px; border:4px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 1s linear infinite; display:none; z-index:10002;"></div>
+				    <div id="close-viewer" style="position:absolute; top:30px; right:30px; color:white; font-size:50px; cursor:pointer; z-index:10003; width:50px; height:50px; text-align:center; line-height:50px;">&times;</div>
+				    <div id="prev-image" style="position:absolute; left:20px; color:white; font-size:60px; cursor:pointer; z-index:10003; padding:20px;">&lsaquo;</div>
+				    <img id="full-image" src="" style="max-width:90%; max-height:90%; object-fit:contain; border-radius:4px; box-shadow:0 0 30px rgba(0,0,0,0.5); transition: opacity 0.3s ease; display:none;">
+				    <div id="next-image" style="position:absolute; right:20px; color:white; font-size:60px; cursor:pointer; z-index:10003; padding:20px;">&rsaquo;</div>
+				</div>
+				
+				<style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
 </body>
 </html>
