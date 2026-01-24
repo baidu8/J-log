@@ -1,4 +1,4 @@
-const CACHE_NAME = 'j-log-v6';
+const CACHE_NAME = 'j-log-v7';
 // 这里的列表是根据你的实际文件结构 整理的
 const ASSETS_TO_CACHE = [
     './',
